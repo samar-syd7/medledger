@@ -1,12 +1,17 @@
 from web3 import Web3
 import json
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+RPC_URL = os.getenv("BLOCKCHAIN_RPC")
 
 # Connect to local Hardhat node
-w3 = Web3(Web3.HTTPProvider("http://127.0.0.1:8545"))
+w3 = Web3(Web3.HTTPProvider(RPC_URL))
 
 # Replace with your deployed contract address
-CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+CONTRACT_ADDRESS = os.getenv("CONTRACT_ADDRESS")
 
 # Load ABI from Hardhat artifacts
 with open("blockchain/artifacts/contracts/AuditRegistry.sol/AuditRegistry.json") as f:
