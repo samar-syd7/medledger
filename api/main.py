@@ -43,6 +43,20 @@ def audit_hl7(message: str):
         "hash": hash_val,
         "tx": receipt.transactionHash.hex()
     }
+    
+@app.post("/verify/hl7")
+def verify_hl7(index: int, message: str):
+    record = get_record(index)
+
+    is_valid = verify_text_against_hash(
+        message,
+        record["hash"]
+    )
+
+    return {
+        "blockchain_hash": record["hash"],
+        "is_valid": is_valid
+    }
 
 @app.post("/access")
 def log_access(patient_id: str, user_id: str, action: str):
