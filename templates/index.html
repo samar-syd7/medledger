@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MedLedger SaaS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-950 text-slate-200">
+
+<div class="flex h-screen">
+
+    <!-- Sidebar -->
+    <div class="w-64 bg-slate-900 p-6 flex flex-col">
+        <h2 class="text-2xl font-bold text-emerald-400 mb-10">MedLedger</h2>
+
+        <button onclick="showView('dashboard')" class="nav-btn">Dashboard</button>
+        <button onclick="showView('audit')" class="nav-btn">Audit Records</button>
+        <button onclick="showView('access')" class="nav-btn">Access Logs</button>
+        <button onclick="showView('settings')" class="nav-btn">Settings</button>
+    </div>
+
+    <!-- Main -->
+    <div class="flex-1 p-10 overflow-y-auto">
+
+        <div class="mb-6 flex items-center gap-3">
+            <div id="statusDot" class="w-3 h-3 rounded-full bg-green-500"></div>
+            <span id="statusText">Blockchain Connected</span>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div id="dashboardView">
+
+            <h1 class="text-3xl font-semibold mb-8">Healthcare Integrity Overview</h1>
+
+            <div class="grid grid-cols-5 gap-6 mb-10">
+
+                <div class="card"><h4>Total</h4><p id="total">0</p></div>
+                <div class="card"><h4>DICOM</h4><p id="dicom">0</p></div>
+                <div class="card"><h4>HL7</h4><p id="hl7">0</p></div>
+                <div class="card"><h4>FHIR</h4><p id="fhir">0</p></div>
+                <div class="card"><h4>ACCESS</h4><p id="access">0</p></div>
+
+            </div>
+
+            <div class="mt-12 bg-slate-900 p-6 rounded-xl shadow-lg max-w-md">
+                <h2 class="text-lg mb-4">Record Distribution</h2>
+                <div class="relative h-60">
+
+                    <canvas id="recordChart" height="180"></canvas>
+                </div>
+            </div>
+
+            <div class="mt-12 bg-slate-900 p-6 rounded-xl shadow-lg">
+                <h2 class="text-lg mb-4">Recent Activity</h2>
+                <ul id="activityFeed" class="space-y-2 text-sm"></ul>
+            </div>
+
+            </br>
+            <button onclick="loadDashboard()" class="action-btn">
+                Refresh Metrics
+            </button>
+
+            <div class="mt-12 bg-slate-900 p-6 rounded-xl shadow-lg max-w-xl">
+                <h2 class="text-lg mb-4">Verify HL7 Integrity</h2>
+                <input id="verifyIndex" type="number" placeholder="Record Index"
+                    class="bg-slate-800 p-2 rounded mr-2">
+                <input id="verifyText" type="text" placeholder="Paste HL7 Message"
+                    class="bg-slate-800 p-2 rounded w-full mt-2">
+                <button onclick="verifyRecord()" class="action-btn mt-3">
+                    Verify
+                </button>
+                <div id="verifyResult" class="mt-3 font-semibold"></div>
+            </div>
+
+        </div>
+
+        <!-- AUDIT -->
+        <div id="auditView" class="hidden">
+            <h1 class="text-2xl mb-6">Audit Records</h1>
+            <button onclick="loadAudit()" class="action-btn mb-6">Refresh</button>
+            <div class="table-box">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-slate-800 text-left">
+                            <th class="p-3">#</th>
+                            <th class="p-3">Type</th>
+                            <th class="p-3">Hash</th>
+                            <th class="p-3">Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody id="auditTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ACCESS -->
+        <div id="accessView" class="hidden">
+            <h1 class="text-2xl mb-6">Access Logs</h1>
+            <button onclick="loadAccess()" class="action-btn mb-6">Refresh</button>
+            <div class="table-box">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-slate-800 text-left">
+                            <th class="p-3">#</th>
+                            <th class="p-3">Hash</th>
+                            <th class="p-3">Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody id="accessTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SETTINGS -->
+        <div id="settingsView" class="hidden">
+            <h1 class="text-2xl mb-6">System Configuration</h1>
+            <div class="bg-slate-900 p-6 rounded-xl">
+                <p><strong>Blockchain:</strong> http://127.0.0.1:8545</p>
+                <p><strong>API:</strong> http://127.0.0.1:8000</p>
+                <p><strong>Status:</strong> Connected</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+.nav-btn {
+    text-align: left;
+    padding: 10px 0;
+    opacity: 0.7;
+}
+.nav-btn:hover {
+    opacity: 1;
+}
+
+.card {
+    background: #0f172a;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+.card h4 {
+    font-size: 13px;
+    opacity: 0.6;
+}
+.card p {
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.action-btn {
+    background: #10b981;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.table-box {
+    background: #0f172a;
+    padding: 20px;
+    border-radius: 16px;
+}
+
+.fade-in {
+    animation: fadeIn 0.6s ease-in-out;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+<script>
+
+function showView(view) {
+    ["dashboard","audit","access","settings"].forEach(v => {
+        document.getElementById(v + "View").classList.add("hidden");
+    });
+    document.getElementById(view + "View").classList.remove("hidden");
+}
+
+async function loadDashboard() {
+    const countRes = await fetch("/records/count");
+    const countData = await countRes.json();
+    const count = countData.count;
+
+    let dicom=0, hl7=0, fhir=0, access=0;
+
+    for (let i = 0; i < count; i++) {
+        const res = await fetch(`/records/${i}`);
+        const data = await res.json();
+
+        if (data.dataType === "DICOM") dicom++;
+        if (data.dataType === "HL7") hl7++;
+        if (data.dataType === "FHIR") fhir++;
+        if (data.dataType === "ACCESS") access++;
+    }
+
+    document.getElementById("total").innerText = count;
+    document.getElementById("dicom").innerText = dicom;
+    document.getElementById("hl7").innerText = hl7;
+    document.getElementById("fhir").innerText = fhir;
+    document.getElementById("access").innerText = access;
+
+    renderChart(dicom, hl7, fhir, access);
+
+    const feed = document.getElementById("activityFeed");
+        feed.innerHTML = "";
+
+        for (let i = Math.max(0, count-5); i < count; i++) {
+            const res = await fetch(`/records/${i}`);
+            const data = await res.json();
+
+            feed.innerHTML += `
+                <li>
+                    ${data.dataType} recorded at 
+                    ${new Date(data.timestamp*1000).toLocaleString()}
+                </li>
+            `;
+        }
+}
+
+async function loadAudit() {
+    const countRes = await fetch("/records/count");
+    const count = (await countRes.json()).count;
+
+    const table = document.getElementById("auditTable");
+    table.innerHTML = "";
+
+    for (let i = 0; i < count; i++) {
+        const data = await (await fetch(`/records/${i}`)).json();
+
+        if (data.dataType !== "ACCESS") {
+            table.innerHTML += `
+            <tr class="border-b border-slate-800">
+                <td class="p-3">${i}</td>
+                <td class="p-3">${data.dataType}</td>
+                <td class="p-3">${data.hash.substring(0,16)}...</td>
+                <td class="p-3">${new Date(data.timestamp*1000).toLocaleString()}</td>
+            </tr>`;
+        }
+    }
+}
+
+async function loadAccess() {
+    const countRes = await fetch("/records/count");
+    const count = (await countRes.json()).count;
+
+    const table = document.getElementById("accessTable");
+    table.innerHTML = "";
+
+    for (let i = 0; i < count; i++) {
+        const data = await (await fetch(`/records/${i}`)).json();
+
+        if (data.dataType === "ACCESS") {
+            table.innerHTML += `
+            <tr class="border-b border-slate-800">
+                <td class="p-3">${i}</td>
+                <td class="p-3">${data.hash.substring(0,16)}...</td>
+                <td class="p-3">${new Date(data.timestamp*1000).toLocaleString()}</td>
+            </tr>`;
+        }
+    }
+}
+
+function showView(view) {
+    ["dashboard","audit","access","settings"].forEach(v => {
+        document.getElementById(v + "View").classList.add("hidden");
+    });
+
+    const active = document.getElementById(view + "View");
+    active.classList.remove("hidden");
+    active.classList.add("fade-in");
+}
+
+let chartInstance = null;
+
+async function renderChart(dicom, hl7, fhir, access) {
+
+    const ctx = document.getElementById('recordChart').getContext('2d');
+
+    if (chartInstance) {
+        chartInstance.destroy();
+    }
+
+    chartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['DICOM', 'HL7', 'FHIR', 'ACCESS'],
+            datasets: [{
+                data: [dicom, hl7, fhir, access],
+                backgroundColor: [
+                    '#3b82f6',
+                    '#10b981',
+                    '#f59e0b',
+                    '#ef4444'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: { color: '#e2e8f0' }
+                }
+            }
+        }
+    });
+}
+
+async function verifyRecord() {
+    const index = document.getElementById("verifyIndex").value;
+    const message = document.getElementById("verifyText").value;
+
+    const res = await fetch(`/verify/hl7?index=${index}&message=${encodeURIComponent(message)}`, {
+        method: "POST"
+    });
+
+    const data = await res.json();
+
+    const resultDiv = document.getElementById("verifyResult");
+
+    if (data.is_valid) {
+        resultDiv.innerHTML = "✔ Integrity Verified";
+        resultDiv.className = "mt-3 text-green-400 font-semibold";
+    } else {
+        resultDiv.innerHTML = "✖ Data Tampered";
+        resultDiv.className = "mt-3 text-red-400 font-semibold";
+    }
+}
+</script>
+
+</body>
+</html>
