@@ -131,6 +131,16 @@ Swagger UI: http://127.0.0.1:8000/docs
 
 ------------------------------------------------------------------------
 
+## Makefile Commands
+```
+make install   # install dependencies
+make node      # start local blockchain node
+make deploy    # deploy smart contract
+make run       # start backend API
+```
+
+------------------------------------------------------------------------
+
 ## Common Setup Issues
 
 ### Hardhat Version Conflicts
