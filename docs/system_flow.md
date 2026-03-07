@@ -7,7 +7,7 @@ The workflow is identical for HL7 messages, DICOM files, and FHIR resources.
 ---
 
 ## Data Integrity Flow
-
+```
 Healthcare Data (HL7 / DICOM / FHIR)
         ↓
 FastAPI API Endpoint
@@ -21,6 +21,8 @@ Ethereum Smart Contract Anchoring
 Immutable Audit Record
         ↓
 Dashboard Monitoring
+
+```
 
 ---
 
