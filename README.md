@@ -32,8 +32,20 @@ anchoring architecture suitable for compliance-focused environments.
 
 ## Architecture
 
-Off-chain data → SHA-256 hash → Smart Contract (Ethereum) → Immutable
-record
+```
+Hospital System
+     ↓
+HL7 / DICOM / FHIR Data
+     ↓
+Canonicalization + SHA-256 Hash
+     ↓
+Ethereum Smart Contract
+     ↓
+Immutable Hash Record
+     ↓
+Verification API
+
+```
 
 Medical data is never stored on-chain.
 
@@ -163,6 +175,20 @@ issues.
 
 ------------------------------------------------------------------------
 
+## Why Blockchain?
+
+Healthcare audit systems must guarantee that historical records cannot be altered without detection.
+
+Public blockchains provide:
+
+- immutable timestamping
+- decentralized verification
+- tamper-evident audit history
+
+By anchoring only cryptographic hashes on-chain, MedLedger preserves patient privacy while enabling independent integrity verification.
+
+------------------------------------------------------------------------
+
 ## Design Principles
 
 -   No PHI stored on blockchain
@@ -170,6 +196,62 @@ issues.
 -   Deterministic hash comparison
 -   Immutable audit trail
 -   Clear separation of on-chain vs off-chain data
+
+------------------------------------------------------------------------
+
+## Data Integrity Model
+
+MedLedger uses a hybrid integrity model:
+
+- Healthcare data remains stored off-chain in hospital systems.
+- SHA-256 fingerprints of records are anchored on Ethereum.
+- Each anchored record includes:
+  - hash
+  - timestamp
+  - submitting entity
+
+This design ensures:
+
+• Sensitive healthcare data never leaves controlled environments  
+• Integrity can be verified publicly  
+• Historical records cannot be altered without detection
+
+------------------------------------------------------------------------
+
+## Tamper Verification
+
+The verification endpoint allows clients to confirm the integrity of a medical record.
+
+Verification process:
+
+1. Client submits the record or canonical representation.
+2. Backend recomputes the SHA-256 hash.
+3. The system queries the Ethereum contract for the stored hash.
+4. Hashes are compared.
+
+If the hashes match → record integrity confirmed.
+
+If they differ → potential tampering detected.
+
+------------------------------------------------------------------------
+
+## Failure Scenarios Considered
+
+### Blockchain Network Unavailable
+
+If Ethereum is temporarily unavailable, record hashes are queued and anchored once connectivity is restored.
+
+---
+
+### Duplicate Anchoring Requests
+
+Duplicate anchoring attempts are detected using deterministic hashing of canonicalized healthcare records.
+
+---
+
+### Data Tampering
+
+If stored healthcare data is altered, recomputed hashes will not match the on-chain fingerprint.
 
 ------------------------------------------------------------------------
 
